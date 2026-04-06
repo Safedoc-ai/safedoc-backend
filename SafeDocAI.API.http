@@ -1,0 +1,6 @@
+@SafeDocAI.API_HostAddress = http://localhost:5291
+
+GET {{SafeDocAI.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
