@@ -37,49 +37,91 @@ Controller → Service → Repository → Banco de Dados
 📁 Estrutura do Projeto (Back-end)
 SafeDocAI.API/
 │
+
 ├── Controllers/
+
 │   ├── UnidadeController.cs
+
 │   ├── DocumentoController.cs
+
 │   └── UploadController.cs
+
 │
+
 ├── Models/
+
 │   ├── Unidade.cs
+
 │   ├── Documento.cs
+
 │   └── Enum/
+
 │       └── StatusDocumento.cs
+
 │
+
 ├── DTOs/
+
 │   ├── UnidadeDTO.cs
+
 │   ├── DocumentoDTO.cs
+
 │   └── UploadDTO.cs
+
 │
+
 ├── Data/
+
 │   ├── AppDbContext.cs
+
 │   └── Migrations/
+
 │
+
 ├── Services/
+
 │   ├── UnidadeService.cs
+
 │   ├── DocumentoService.cs
+
 │   └── IAServiceMock.cs
+
 │
+
 ├── Repositories/
+
 │   ├── IUnidadeRepository.cs
+
 │   ├── UnidadeRepository.cs
+
 │   ├── IDocumentoRepository.cs
+
 │   └── DocumentoRepository.cs
+
 │
 ├── Config/
+
 │   └── AutoMapperProfile.cs
+
 │
+
 ├── Middlewares/
+
 │   └── ErrorHandlingMiddleware.cs
+
 │
 ├── Utils/
+
 │   └── FileHelper.cs
+
 │
+
 ├── appsettings.json
+
 ├── Program.cs
+
 └── Startup.cs (se estiver usando .NET antigo)
+
 
 
 🔄 Organização do Desenvolvimento
