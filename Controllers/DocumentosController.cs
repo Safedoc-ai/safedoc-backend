@@ -4,6 +4,7 @@ using SafeDocAI.API.Data;
 using SafeDocAI.API.DTOs;
 using SafeDocAI.API.Enums;
 using SafeDocAI.API.Models;
+using SafeDocAI.API.Services;
 
 namespace SafeDocAI.API.Controllers;
 
@@ -12,11 +13,13 @@ namespace SafeDocAI.API.Controllers;
 public class DocumentosController : ControllerBase
 {
     private readonly AppDbContext _context;
+private readonly StatusDocumentoService _statusService;
 
-    public DocumentosController(AppDbContext context)
-    {
-        _context = context;
-    }
+public DocumentosController(AppDbContext context, StatusDocumentoService statusService)
+{
+    _context = context;
+    _statusService = statusService;
+}
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<DocumentoDto>>> Listar()
@@ -71,7 +74,7 @@ public class DocumentosController : ControllerBase
             DataEmissao = dto.DataEmissao,
             DataValidade = dto.DataValidade,
             UnidadeId = dto.UnidadeId,
-            Status = StatusDocumento.EmDia
+            Status = _statusService.CalcularStatus(dto.DataValidade)
         };
 
         _context.Documentos.Add(documento);
@@ -101,6 +104,7 @@ public class DocumentosController : ControllerBase
         documento.DataEmissao = dto.DataEmissao;
         documento.DataValidade = dto.DataValidade;
         documento.UnidadeId = dto.UnidadeId;
+        documento.Status = _statusService.CalcularStatus(dto.DataValidade);
 
         await _context.SaveChangesAsync();
 
