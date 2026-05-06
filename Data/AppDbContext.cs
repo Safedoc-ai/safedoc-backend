@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Documento> Documentos { get; set; }
     public DbSet<Unidade> Unidades { get; set; }
+    public DbSet<DocumentoObrigatorio> DocumentosObrigatorios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,6 +21,9 @@ public class AppDbContext : DbContext
             .HasKey(u => u.Id);
 
         modelBuilder.Entity<Documento>()
+            .HasKey(d => d.Id);
+
+        modelBuilder.Entity<DocumentoObrigatorio>()
             .HasKey(d => d.Id);
 
         modelBuilder.Entity<Documento>()
@@ -52,5 +56,15 @@ public class AppDbContext : DbContext
             .Property(d => d.Nome)
             .IsRequired()
             .HasMaxLength(150);
+
+        modelBuilder.Entity<DocumentoObrigatorio>()
+            .Property(d => d.Nome)
+            .IsRequired()
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<DocumentoObrigatorio>()
+            .Property(d => d.Frequencia)
+            .IsRequired()
+            .HasMaxLength(50);
     }
 }
