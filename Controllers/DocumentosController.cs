@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SafeDocAI.API.Data;
 using SafeDocAI.API.DTOs;
-using SafeDocAI.API.Enums;
 using SafeDocAI.API.Models;
 using SafeDocAI.API.Services;
 
@@ -13,13 +12,13 @@ namespace SafeDocAI.API.Controllers;
 public class DocumentosController : ControllerBase
 {
     private readonly AppDbContext _context;
-private readonly StatusDocumentoService _statusService;
+    private readonly StatusDocumentoService _statusService;
 
-public DocumentosController(AppDbContext context, StatusDocumentoService statusService)
-{
-    _context = context;
-    _statusService = statusService;
-}
+    public DocumentosController(AppDbContext context, StatusDocumentoService statusService)
+    {
+        _context = context;
+        _statusService = statusService;
+    }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<DocumentoDto>>> Listar()
@@ -45,7 +44,9 @@ public DocumentosController(AppDbContext context, StatusDocumentoService statusS
         var documento = await _context.Documentos.FindAsync(id);
 
         if (documento == null)
+        {
             return NotFound(new { mensagem = "Documento não encontrado." });
+        }
 
         var dto = new DocumentoDto
         {
@@ -66,7 +67,9 @@ public DocumentosController(AppDbContext context, StatusDocumentoService statusS
         var unidadeExiste = await _context.Unidades.AnyAsync(u => u.Id == dto.UnidadeId);
 
         if (!unidadeExiste)
+        {
             return BadRequest(new { mensagem = "Unidade informada não existe." });
+        }
 
         var documento = new Documento
         {
@@ -87,18 +90,85 @@ public DocumentosController(AppDbContext context, StatusDocumentoService statusS
         });
     }
 
+    [HttpPost("upload")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult> UploadDocumento(
+        IFormFile arquivo,
+        [FromForm] string nome,
+        [FromForm] DateTime dataEmissao,
+        [FromForm] DateTime dataValidade,
+        [FromForm] int unidadeId)
+    {
+        if (arquivo == null || arquivo.Length == 0)
+        {
+            return BadRequest(new { mensagem = "Nenhum arquivo foi enviado." });
+        }
+
+        if (string.IsNullOrWhiteSpace(nome))
+        {
+            return BadRequest(new { mensagem = "O nome do documento é obrigatório." });
+        }
+
+        var unidadeExiste = await _context.Unidades.AnyAsync(u => u.Id == unidadeId);
+
+        if (!unidadeExiste)
+        {
+            return BadRequest(new { mensagem = "Unidade informada não existe." });
+        }
+
+        var pastaUploads = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+
+        if (!Directory.Exists(pastaUploads))
+        {
+            Directory.CreateDirectory(pastaUploads);
+        }
+
+        var nomeOriginalArquivo = Path.GetFileName(arquivo.FileName);
+        var nomeArquivoSalvo = $"{Guid.NewGuid()}_{nomeOriginalArquivo}";
+        var caminhoArquivo = Path.Combine(pastaUploads, nomeArquivoSalvo);
+
+        using (var stream = new FileStream(caminhoArquivo, FileMode.Create))
+        {
+            await arquivo.CopyToAsync(stream);
+        }
+
+        var documento = new Documento
+        {
+            Nome = nome,
+            DataEmissao = dataEmissao,
+            DataValidade = dataValidade,
+            UnidadeId = unidadeId,
+            Status = _statusService.CalcularStatus(dataValidade)
+        };
+
+        _context.Documentos.Add(documento);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(BuscarPorId), new { id = documento.Id }, new
+        {
+            mensagem = "Documento enviado com sucesso.",
+            id = documento.Id,
+            arquivo = nomeArquivoSalvo,
+            status = documento.Status.ToString()
+        });
+    }
+
     [HttpPut("{id}")]
     public async Task<ActionResult> Atualizar(int id, CriarDocumentoDto dto)
     {
         var documento = await _context.Documentos.FindAsync(id);
 
         if (documento == null)
+        {
             return NotFound(new { mensagem = "Documento não encontrado." });
+        }
 
         var unidadeExiste = await _context.Unidades.AnyAsync(u => u.Id == dto.UnidadeId);
 
         if (!unidadeExiste)
+        {
             return BadRequest(new { mensagem = "Unidade informada não existe." });
+        }
 
         documento.Nome = dto.Nome;
         documento.DataEmissao = dto.DataEmissao;
@@ -117,7 +187,9 @@ public DocumentosController(AppDbContext context, StatusDocumentoService statusS
         var documento = await _context.Documentos.FindAsync(id);
 
         if (documento == null)
+        {
             return NotFound(new { mensagem = "Documento não encontrado." });
+        }
 
         _context.Documentos.Remove(documento);
         await _context.SaveChangesAsync();
